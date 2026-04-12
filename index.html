@@ -412,32 +412,31 @@
 // Format: { year, month, paper, answers: [40 answers as A/B/C/D] }
 // ═══════════════════════════════════════════════════════════════════════════
 const ANSWER_KEYS = [
-  { year:2015, month:"March",          paper:"12",
+  { year:2015, month:"march",          paper:"12",
     answers:["A","B","A","D","D","A","A","B","C","D","B","A","D","D","C","D","D","C","A","B","B","C","B","C","D","B","B","B","C","A","A","B","A","D","C","C","C","B","B","A"] },
-  { year:2016, month:"March",          paper:"22",
+  { year:2016, month:"march",          paper:"22",
     answers:["C","C","D","C","D","B","A","C","C","D","C","A","D","B","B","C","C","B","B","B","B","D","B","D","D","C","A","A","B","B","C","A","B","C","C","B","D","C","A","A"] },
-  { year:2017, month:"March",          paper:"22",
+  { year:2017, month:"march",          paper:"22",
     answers:["B","D","B","B","B","A","C","C","C","B","D","B","B","C","A","C","C","A","C","D","D","B","B","A","C","B","A","C","A","A","B","A","B","B","A","D","D","C","C","A"] },
-  { year:2018, month:"March",          paper:"22",
+  { year:2018, month:"march",          paper:"22",
     answers:["D","C","D","D","C","C","A","D","B","B","B","A","C","B","D","A","D","B","A","C","D","B","A","D","C","B","D","C","C","A","B","D","A","D","D","A","A","C","D","A"] },
-  { year:2019, month:"March",          paper:"22",
+  { year:2019, month:"march",          paper:"22",
     answers:["D","C","C","A","B","D","C","B","B","A","C","B","C","B","D","D","C","C","D","C","C","C","D","A","D","B","C","C","B","B","A","C","A","A","B","A","D","C","A","C"] },
-  { year:2020, month:"March",          paper:"22",
+  { year:2020, month:"march",          paper:"22",
     answers:["A","A","D","D","C","D","A","C","C","B","C","C","C","D","B","C","A","C","A","C","D","A","A","D","A","D","C","C","A","C","B","D","D","D","B","C","C","B","B","B"] },
-  { year:2021, month:"March",          paper:"22",
+  { year:2021, month:"march",          paper:"22",
     answers:["B","D","C","D","C","A","C","C","C","D","B","C","A","C","D","C","A","B","B","A","D","A","C","D","D","B","C","B","D","C","B","D","D","A","D","C","D","C","B","B"] },
-  { year:2022, month:"March", paper:"22",
+  { year:2022, month:"march", paper:"22",
     answers:["B","D","D","A","A","C","C","D","D","B","D","B","C","B","B","C","B","B","C","C","B","D","C","B","D","A","D","D","A","B","A","A","A","C","B","C","D","A","D","B"] },
-  { year:2023, month:"March", paper:"22",
+  { year:2023, month:"march", paper:"22",
     answers:["B","D","B","A","D","D","B","D","B","A","C","D","C","D","D","C","C","C","C","C","D","A","C","B","A","C","D","C","C","B","D","C","D","D","C","D","B","B","D","A"] },
-  { year:2024, month:"March", paper:"22",
+  { year:2024, month:"march", paper:"22",
     answers:["B","B","C","A","D","D","A","B","A","B","A","C","C","B","C","C","D","D","A","C","B","D","A","D","C","B","B","B","C","A","C","A","D","C","B","C","C","A","D","A"] },
-  { year:2025, month:"March", paper:"22",
+  { year:2025, month:"march", paper:"22",
     answers:["B","B","C","D","A","C","B","A","D","B","A","D","A","D","A","B","C","D","D","A","A","D","A","B","A","A","D","C","D","C","B","C","C","C","A","A","D","D","C","A"] },
 ];
 
 // ── PDF PATH: /{year}/{month}/{paper}/paper.pdf ────────────────────────────
-// "February/March" becomes two nested folders: February/March
 // We keep the slash as-is in the URL path — it naturally becomes a subfolder.
 function pdfPath(key) {
   return `questions/${key.year}/${key.month}/${key.paper}/paper.pdf`;
