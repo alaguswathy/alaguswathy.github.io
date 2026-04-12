@@ -440,7 +440,7 @@ const ANSWER_KEYS = [
 // "February/March" becomes two nested folders: February/March
 // We keep the slash as-is in the URL path — it naturally becomes a subfolder.
 function pdfPath(key) {
-  return `./questions/${key.year}/${key.month}/${key.paper}/paper.pdf`;
+  return `questions/${key.year}/${key.month}/${key.paper}/paper.pdf`;
 }
 
 const PASSWORD_HASH = "590ccea4153f0d6bbaeb734ba018767781cecad3a9761162fec808af1007c0d3";
