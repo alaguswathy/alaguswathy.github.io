@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IGCSE Physics · MCQ Grader</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1f2937;
+    --border: #2d3748;
+    --accent: #38bdf8;
+    --accent-dim: rgba(56,189,248,.15);
+    --accent2: #f472b6;
+    --correct: #4ade80;
+    --wrong: #f87171;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --radius: 10px;
+    --serif: 'DM Serif Display', serif;
+    --sans: 'DM Sans', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; overflow: hidden; }
+
+  .screen { display: none; width: 100vw; height: 100vh; }
+  .screen.active { display: flex; }
+
+  /* ── SETUP ── */
+  #setup {
+    flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(56,189,248,.18) 0%, transparent 70%), var(--bg);
+  }
+
+  .setup-card {
+    width: min(460px, 94vw);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 18px; padding: 2.8rem 2.4rem 2.2rem;
+    box-shadow: 0 30px 80px rgba(0,0,0,.5);
+  }
+
+  .badge {
+    display: inline-block; font-family: var(--mono); font-size: .7rem;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--accent);
+    background: var(--accent-dim); border: 1px solid rgba(56,189,248,.3);
+    border-radius: 999px; padding: .25rem .8rem; margin-bottom: 1.2rem;
+  }
+
+  .setup-card h1 { font-family: var(--serif); font-size: 2.2rem; line-height: 1.1; margin-bottom: .5rem; color: #fff; }
+  .setup-card h1 em { color: var(--accent); font-style: normal; }
+  .setup-card p.sub { color: var(--muted); font-size: .88rem; margin-bottom: 2rem; line-height: 1.55; }
+
+  .form-group { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.6rem; }
+
+  label.field {
+    display: flex; flex-direction: column; gap: .45rem;
+    font-size: .75rem; font-weight: 600; letter-spacing: .07em;
+    text-transform: uppercase; color: var(--muted);
+  }
+
+  label.field select {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+    color: var(--text); font-family: var(--sans); font-size: .95rem;
+    padding: .75rem 2.5rem .75rem 1rem; outline: none; transition: border-color .2s;
+    cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 1rem center;
+  }
+
+  label.field select:focus { border-color: var(--accent); }
+  label.field select option { background: #1f2937; }
+
+  label.field input {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+    color: var(--text); font-family: var(--sans); font-size: .95rem;
+    padding: .75rem 1rem; outline: none; transition: border-color .2s;
+  }
+  label.field input:focus { border-color: var(--accent); }
+  label.field input::placeholder { color: var(--muted); }
+
+  .key-status {
+    display: flex; align-items: center; gap: .5rem;
+    font-family: var(--mono); font-size: .75rem;
+    padding: .65rem 1rem; border-radius: var(--radius);
+    border: 1px solid var(--border); background: var(--surface2);
+  }
+  .key-status.found  { border-color: rgba(74,222,128,.3); color: var(--correct); }
+  .key-status.missing { border-color: rgba(248,113,113,.3); color: var(--wrong); }
+  .key-status .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+  .btn-start {
+    width: 100%; padding: .9rem; background: var(--accent); color: #0c1a27;
+    border: none; border-radius: var(--radius); font-family: var(--sans);
+    font-size: 1rem; font-weight: 700; cursor: pointer;
+    transition: opacity .2s, transform .1s; letter-spacing: .02em;
+  }
+  .btn-start:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
+  .btn-start:disabled { opacity: .3; cursor: not-allowed; }
+
+  .social-links {
+    display: flex; justify-content: center; gap: 1rem;
+    margin-top: 1.8rem; padding-top: 1.2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .social-link {
+    display: flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; border-radius: 50%;
+    color: var(--muted); background: var(--surface2);
+    border: 1px solid var(--border);
+    transition: all .2s; text-decoration: none;
+  }
+  .social-link:hover {
+    color: var(--accent); border-color: var(--accent);
+    background: var(--accent-dim); transform: translateY(-2px);
+  }
+
+  /* ── EXAM ── */
+  #exam { flex-direction: row; overflow: hidden; }
+
+  .pdf-panel {
+    flex: 0 0 80%; height: 100vh;
+    display: flex; flex-direction: column;
+    border-right: 1px solid var(--border); background: #1a1a2e;
+  }
+
+  .pdf-topbar {
+    height: 46px; background: var(--surface); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 1.2rem; gap: 1rem; flex-shrink: 0;
+  }
+
+  .paper-label { font-family: var(--mono); font-size: .78rem; color: var(--accent); letter-spacing: .07em; }
+
+  .btn-back-top {
+    margin-left: auto; font-size: .75rem; color: var(--muted);
+    background: none; border: 1px solid var(--border); border-radius: 6px;
+    padding: .3rem .75rem; cursor: pointer; font-family: var(--sans); transition: all .2s;
+  }
+  .btn-back-top:hover { color: var(--text); border-color: var(--muted); }
+
+  .pdf-frame { flex: 1; width: 100%; border: none; }
+
+  /* ── ANSWER PANEL ── */
+  .answer-panel {
+    flex: 0 0 20%; height: 100vh; background: var(--surface);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+
+  .panel-header { padding: .9rem 1rem .7rem; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .panel-header h2 { font-family: var(--serif); font-size: 1.1rem; color: #fff; margin-bottom: .15rem; }
+
+  .timer-display {
+    font-family: var(--mono); font-size: 1.4rem; font-weight: 600;
+    color: var(--accent); text-align: center; padding: .3rem 0;
+    letter-spacing: .05em;
+  }
+  .timer-display.warning { color: #fb923c; animation: pulse 1s infinite; }
+  .timer-display.danger { color: var(--wrong); animation: pulse .5s infinite; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+  }
+
+  .session-tag {
+    font-family: var(--mono); font-size: .68rem; color: var(--accent);
+    background: var(--accent-dim); border: 1px solid rgba(56,189,248,.2);
+    border-radius: 4px; padding: 1px 6px; display: inline-block; margin-bottom: .5rem;
+  }
+
+  .progress-bar { height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; margin-bottom: .3rem; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; transition: width .3s; width: 0%; }
+  .progress-text { font-family: var(--mono); font-size: .68rem; color: var(--muted); }
+
+  .questions-scroll {
+    flex: 1; overflow-y: auto; padding: .5rem .7rem;
+    scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+  }
+  .questions-scroll::-webkit-scrollbar { width: 4px; }
+  .questions-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+  .q-row {
+    display: flex; align-items: center; gap: .4rem;
+    padding: .3rem .4rem; border-radius: 7px; transition: background .15s; margin-bottom: 1px;
+  }
+  .q-row:hover { background: var(--surface2); }
+
+  .q-num { font-family: var(--mono); font-size: .7rem; color: var(--muted); min-width: 20px; text-align: right; flex-shrink: 0; }
+
+  .q-options { display: flex; gap: 2px; flex: 1; }
+
+  .q-options label {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    height: 26px; border-radius: 5px; border: 1px solid var(--border);
+    font-size: .72rem; font-weight: 600; color: var(--muted);
+    cursor: pointer; transition: all .12s; user-select: none;
+  }
+
+  .q-options input[type="radio"] { display: none; }
+
+  .q-options label:has(input:checked) { background: var(--accent); border-color: var(--accent); color: #0c1a27; }
+  .q-options label:not(:has(input:checked)):hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+  .q-row.correct .q-num { color: var(--correct); }
+  .q-row.wrong   .q-num { color: var(--wrong); }
+
+  .q-row.correct .q-options label:has(input:checked) { background: var(--correct); border-color: var(--correct); color: #052e16; }
+  .q-row.wrong   .q-options label:has(input:checked) { background: var(--wrong);   border-color: var(--wrong);   color: #3f0505; }
+
+  .q-options label.show-correct { background: rgba(74,222,128,.2); border-color: var(--correct); color: var(--correct); }
+
+  .correct-badge {
+    font-family: var(--mono); font-size: .65rem; font-weight: 500;
+    color: var(--correct); background: rgba(74,222,128,.1);
+    border: 1px solid rgba(74,222,128,.25); border-radius: 4px; padding: 1px 4px; flex-shrink: 0;
+  }
+  .q-row.skipped .correct-badge { color: var(--muted); background: rgba(100,116,139,.1); border-color: rgba(100,116,139,.2); }
+  .graded .q-options label { cursor: default; pointer-events: none; }
+
+  .panel-footer { padding: .7rem .9rem; border-top: 1px solid var(--border); flex-shrink: 0; display: flex; flex-direction: column; gap: .5rem; }
+
+  .btn-download-small {
+    width: 100%; padding: .55rem; background: var(--surface2); color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    font-family: var(--sans); font-size: .8rem; cursor: pointer; transition: all .2s;
+    display: none;
+  }
+  .btn-download-small:hover { background: var(--border); }
+  .btn-download-small.visible { display: block; }
+
+  .btn-submit {
+    width: 100%; padding: .65rem; background: var(--accent); color: #0c1a27;
+    border: none; border-radius: var(--radius); font-family: var(--sans);
+    font-size: .88rem; font-weight: 700; cursor: pointer; transition: opacity .2s, transform .1s;
+  }
+  .btn-submit:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
+  .btn-submit:disabled { opacity: .5; cursor: default; }
+
+  .btn-reset {
+    width: 100%; padding: .55rem; background: transparent; color: var(--muted);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    font-family: var(--sans); font-size: .8rem; cursor: pointer; transition: all .2s;
+  }
+  .btn-reset:hover { border-color: var(--muted); color: var(--text); }
+
+  /* ── RESULTS OVERLAY ── */
+  #results-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(13,17,23,.88); backdrop-filter: blur(10px);
+    z-index: 100; align-items: center; justify-content: center;
+  }
+  #results-overlay.visible { display: flex; }
+
+  .results-card {
+    width: min(460px, 94vw); background: var(--surface);
+    border: 1px solid var(--border); border-radius: 20px;
+    padding: 2.5rem 2rem 2rem; box-shadow: 0 40px 100px rgba(0,0,0,.6);
+    text-align: center; animation: pop .4s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  @keyframes pop { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  .score-ring { width: 120px; height: 120px; margin: 0 auto 1.4rem; position: relative; }
+  .score-ring svg { transform: rotate(-90deg); }
+  .ring-bg   { fill: none; stroke: var(--border); stroke-width: 8; }
+  .ring-fill { fill: none; stroke-width: 8; stroke-linecap: round; stroke-dasharray: 283; stroke-dashoffset: 283; transition: stroke-dashoffset 1s ease, stroke .5s; }
+
+  .score-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .score-num   { font-family: var(--serif); font-size: 2.2rem; color: #fff; line-height: 1; }
+  .score-denom { font-family: var(--mono); font-size: .7rem; color: var(--muted); }
+
+  .results-card h2 { font-family: var(--serif); font-size: 1.65rem; color: #fff; margin-bottom: .4rem; }
+  .grade-tag { display: inline-block; font-family: var(--mono); font-size: .82rem; font-weight: 500; padding: .28rem 1rem; border-radius: 999px; margin-bottom: 1.3rem; }
+
+  .stats-row { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1.5rem; }
+  .stat .val { font-family: var(--serif); font-size: 1.6rem; display: block; color: #fff; }
+  .stat .lbl { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+
+  .results-actions { display: flex; gap: .7rem; }
+
+  .btn-download {
+    flex: 1; padding: .7rem; border-radius: var(--radius);
+    font-family: var(--sans); font-size: .85rem; font-weight: 600; cursor: pointer; transition: all .2s;
+    background: var(--surface2); color: var(--text); border: 1px solid var(--border);
+  }
+  .btn-download:hover { background: var(--border); }
+
+  .btn-review, .btn-new {
+    flex: 1; padding: .7rem; border-radius: var(--radius);
+    font-family: var(--sans); font-size: .85rem; font-weight: 600; cursor: pointer; transition: all .2s;
+  }
+  .btn-review { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(56,189,248,.3); }
+  .btn-review:hover { background: var(--accent); color: #0c1a27; }
+  .btn-new { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-new:hover { background: var(--border); }
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<section id="setup" class="screen active">
+  <div class="setup-card">
+    <div class="badge">Cambridge IGCSE · 0625 Physics</div>
+    <h1>MCQ <em>Grader</em></h1>
+    <p class="sub">Select the exam session and paper to begin. The question paper will load automatically.</p>
+
+    <div class="form-group">
+      <label class="field">Year
+        <select id="sel-year"></select>
+      </label>
+      <label class="field">Month / Session
+        <select id="sel-month"></select>
+      </label>
+      <label class="field">Paper Number
+        <select id="sel-paper"></select>
+      </label>
+      <label class="field">Password
+        <input type="password" id="inp-password" placeholder="Enter exam password"
+          style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--sans);font-size:.95rem;padding:.75rem 1rem;outline:none;transition:border-color .2s;" />
+      </label>
+      <div class="key-status missing" id="key-status">
+        <span class="dot"></span>
+        <span id="key-status-text">Select a session above</span>
+      </div>
+    </div>
+
+    <button class="btn-start" id="btn-start" disabled>Start Exam →</button>
+
+    <div class="social-links">
+      <a href="https://www.instagram.com/igcse_physics_0625/" target="_blank" rel="noopener" class="social-link" title="Instagram">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+        </svg>
+      </a>
+      <a href="https://in.linkedin.com/in/alaguswathy-senthilkumar" target="_blank" rel="noopener" class="social-link" title="LinkedIn">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- EXAM SCREEN -->
+<section id="exam" class="screen">
+  <div class="pdf-panel">
+    <div class="pdf-topbar">
+      <span class="paper-label" id="exam-paper-label"></span>
+      <button class="btn-back-top" id="btn-back-top">← Change Paper</button>
+    </div>
+    <iframe id="pdf-frame" class="pdf-frame" title="Question Paper"></iframe>
+  </div>
+
+  <div class="answer-panel" id="answer-panel">
+    <div class="panel-header">
+      <h2>Your Answers</h2>
+      <div class="session-tag" id="panel-session-tag"></div>
+      <div class="timer-display" id="timer-display">40:00</div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-text" id="progress-text">0 / 40 answered</div>
+    </div>
+    <div class="questions-scroll" id="questions-scroll"></div>
+    <div class="panel-footer">
+      <button class="btn-submit" id="btn-submit">Submit Answers</button>
+      <button class="btn-download-small" id="btn-download-small">📥 Download Answers</button>
+      <button class="btn-reset"  id="btn-reset">← Change Paper</button>
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS OVERLAY -->
+<div id="results-overlay">
+  <div class="results-card">
+    <div class="score-ring">
+      <svg width="120" height="120" viewBox="0 0 100 100">
+        <circle class="ring-bg"   cx="50" cy="50" r="45"/>
+        <circle class="ring-fill" id="ring-fill" cx="50" cy="50" r="45"/>
+      </svg>
+      <div class="score-center">
+        <span class="score-num" id="score-num">–</span>
+        <span class="score-denom">/ 40</span>
+      </div>
+    </div>
+    <h2 id="result-heading"></h2>
+    <div class="grade-tag" id="grade-tag"></div>
+    <div class="stats-row">
+      <div class="stat"><span class="val" id="stat-correct" style="color:var(--correct)">–</span><span class="lbl">Correct</span></div>
+      <div class="stat"><span class="val" id="stat-wrong"   style="color:var(--wrong)">–</span><span class="lbl">Wrong</span></div>
+      <div class="stat"><span class="val" id="stat-skipped" style="color:var(--muted)">–</span><span class="lbl">Skipped</span></div>
+    </div>
+    <div class="results-actions">
+      <button class="btn-review" id="btn-review">Review Answers</button>
+      <button class="btn-download" id="btn-download">📥 Download Answers</button>
+    </div>
+    <div class="results-actions">
+      <button class="btn-new" id="btn-new-paper">New Paper</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// ── ANSWER KEYS ────────────────────────────────────────────────────────────
+// Format: { year, month, paper, answers: [40 answers as A/B/C/D] }
+// ═══════════════════════════════════════════════════════════════════════════
+const ANSWER_KEYS = [
+  { year:2015, month:"March",          paper:"12",
+    answers:["A","B","A","D","D","A","A","B","C","D","B","A","D","D","C","D","D","C","A","B","B","C","B","C","D","B","B","B","C","A","A","B","A","D","C","C","C","B","B","A"] },
+  { year:2016, month:"March",          paper:"22",
+    answers:["C","C","D","C","D","B","A","C","C","D","C","A","D","B","B","C","C","B","B","B","B","D","B","D","D","C","A","A","B","B","C","A","B","C","C","B","D","C","A","A"] },
+  { year:2017, month:"March",          paper:"22",
+    answers:["B","D","B","B","B","A","C","C","C","B","D","B","B","C","A","C","C","A","C","D","D","B","B","A","C","B","A","C","A","A","B","A","B","B","A","D","D","C","C","A"] },
+  { year:2018, month:"March",          paper:"22",
+    answers:["D","C","D","D","C","C","A","D","B","B","B","A","C","B","D","A","D","B","A","C","D","B","A","D","C","B","D","C","C","A","B","D","A","D","D","A","A","C","D","A"] },
+  { year:2019, month:"March",          paper:"22",
+    answers:["D","C","C","A","B","D","C","B","B","A","C","B","C","B","D","D","C","C","D","C","C","C","D","A","D","B","C","C","B","B","A","C","A","A","B","A","D","C","A","C"] },
+  { year:2020, month:"March",          paper:"22",
+    answers:["A","A","D","D","C","D","A","C","C","B","C","C","C","D","B","C","A","C","A","C","D","A","A","D","A","D","C","C","A","C","B","D","D","D","B","C","C","B","B","B"] },
+  { year:2021, month:"March",          paper:"22",
+    answers:["B","D","C","D","C","A","C","C","C","D","B","C","A","C","D","C","A","B","B","A","D","A","C","D","D","B","C","B","D","C","B","D","D","A","D","C","D","C","B","B"] },
+  { year:2022, month:"March", paper:"22",
+    answers:["B","D","D","A","A","C","C","D","D","B","D","B","C","B","B","C","B","B","C","C","B","D","C","B","D","A","D","D","A","B","A","A","A","C","B","C","D","A","D","B"] },
+  { year:2023, month:"March", paper:"22",
+    answers:["B","D","B","A","D","D","B","D","B","A","C","D","C","D","D","C","C","C","C","C","D","A","C","B","A","C","D","C","C","B","D","C","D","D","C","D","B","B","D","A"] },
+  { year:2024, month:"March", paper:"22",
+    answers:["B","B","C","A","D","D","A","B","A","B","A","C","C","B","C","C","D","D","A","C","B","D","A","D","C","B","B","B","C","A","C","A","D","C","B","C","C","A","D","A"] },
+  { year:2025, month:"March", paper:"22",
+    answers:["B","B","C","D","A","C","B","A","D","B","A","D","A","D","A","B","C","D","D","A","A","D","A","B","A","A","D","C","D","C","B","C","C","C","A","A","D","D","C","A"] },
+];
+
+// ── PDF PATH: /{year}/{month}/{paper}/paper.pdf ────────────────────────────
+// "February/March" becomes two nested folders: February/March
+// We keep the slash as-is in the URL path — it naturally becomes a subfolder.
+function pdfPath(key) {
+  return `./questions/${key.year}/${key.month}/${key.paper}/paper.pdf`;
+}
+
+const PASSWORD_HASH = "590ccea4153f0d6bbaeb734ba018767781cecad3a9761162fec808af1007c0d3";
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let selectedKey = null;
+let userAnswers = new Array(40).fill(null);
+let isGraded    = false;
+let timerInterval = null;
+let timeRemaining = 40 * 60; // 40 minutes in seconds
+const TOTAL_TIME = 40 * 60;
+let isPasswordValid = false;
+
+// ── DOM ────────────────────────────────────────────────────────────────────
+const selYear      = document.getElementById('sel-year');
+const selMonth     = document.getElementById('sel-month');
+const selPaper     = document.getElementById('sel-paper');
+const keyStatus    = document.getElementById('key-status');
+const keyStatusTxt = document.getElementById('key-status-text');
+const btnStart     = document.getElementById('btn-start');
+const setupScreen  = document.getElementById('setup');
+const examScreen   = document.getElementById('exam');
+const pdfFrame     = document.getElementById('pdf-frame');
+const examLbl      = document.getElementById('exam-paper-label');
+const panelTag     = document.getElementById('panel-session-tag');
+const progressFill = document.getElementById('progress-fill');
+const progressText = document.getElementById('progress-text');
+const questionsDiv = document.getElementById('questions-scroll');
+const answerPanel  = document.getElementById('answer-panel');
+const btnSubmit    = document.getElementById('btn-submit');
+const btnReset     = document.getElementById('btn-reset');
+const btnBackTop   = document.getElementById('btn-back-top');
+const overlay      = document.getElementById('results-overlay');
+const ringFill     = document.getElementById('ring-fill');
+const scoreNum     = document.getElementById('score-num');
+const resultHead   = document.getElementById('result-heading');
+const gradeTag     = document.getElementById('grade-tag');
+const statCorrect  = document.getElementById('stat-correct');
+const statWrong    = document.getElementById('stat-wrong');
+const statSkipped  = document.getElementById('stat-skipped');
+const btnReview    = document.getElementById('btn-review');
+const inpPassword  = document.getElementById('inp-password');
+const btnDownload      = document.getElementById('btn-download');
+const btnDownloadSmall = document.getElementById('btn-download-small');
+const btnNewPaper      = document.getElementById('btn-new-paper');
+const timerDisplay     = document.getElementById('timer-display');
+
+// ── INIT SELECTS ───────────────────────────────────────────────────────────
+function addOption(sel, value, label) {
+  const o = document.createElement('option');
+  o.value = value; o.textContent = label;
+  sel.appendChild(o);
+}
+
+function populateYears() {
+  selYear.innerHTML = '';
+  const years = [...new Set(ANSWER_KEYS.map(k => k.year))].sort((a,b) => b-a);
+  years.forEach(y => addOption(selYear, y, y));
+}
+
+function populateMonths() {
+  selMonth.innerHTML = '';
+  const y = parseInt(selYear.value);
+  const months = [...new Set(ANSWER_KEYS.filter(k => k.year === y).map(k => k.month))];
+  months.forEach(m => addOption(selMonth, m, m));
+}
+
+function populatePapers() {
+  selPaper.innerHTML = '';
+  const y = parseInt(selYear.value);
+  const m = selMonth.value;
+  const papers = [...new Set(ANSWER_KEYS.filter(k => k.year === y && k.month === m).map(k => k.paper))];
+  papers.forEach(p => addOption(selPaper, p, `Paper ${p}`));
+}
+
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function validatePassword() {
+  const entered = inpPassword.value;
+  if (!entered) {
+    isPasswordValid = false;
+    return;
+  }
+  const hash = await hashPassword(entered);
+  isPasswordValid = (hash === PASSWORD_HASH);
+  updateStartButton();
+}
+
+function updateStartButton() {
+  const y = parseInt(selYear.value);
+  const m = selMonth.value;
+  const p = selPaper.value;
+  const found = ANSWER_KEYS.find(k => k.year===y && k.month===m && k.paper===p);
+
+  if (found && isPasswordValid) {
+    selectedKey = found;
+    keyStatus.className  = 'key-status found';
+    keyStatusTxt.textContent = `Answer key available for this paper — ${m} ${y}, Paper ${p}`;
+    btnStart.disabled = false;
+  } else if (!isPasswordValid) {
+    selectedKey = null;
+    keyStatus.className  = 'key-status missing';
+    if (inpPassword.value) {
+      keyStatusTxt.textContent = 'Incorrect password';
+    } else {
+      keyStatusTxt.textContent = 'Enter password to continue';
+    }
+    btnStart.disabled = true;
+  } else {
+    selectedKey = null;
+    keyStatus.className  = 'key-status missing';
+    keyStatusTxt.textContent = 'No answer key for this combination';
+    btnStart.disabled = true;
+  }
+}
+
+// Initialize with cascading population
+(function init() {
+  populateYears();
+  populateMonths();
+  populatePapers();
+  updateStartButton();
+})();
+
+// Cascade: Year change → update months & papers
+selYear.addEventListener('change', () => { populateMonths(); populatePapers(); updateStartButton(); });
+// Cascade: Month change → update papers
+selMonth.addEventListener('change', () => { populatePapers(); updateStartButton(); });
+// Paper change → just update status
+selPaper.addEventListener('change', updateStartButton);
+// Password validation
+inpPassword.addEventListener('input', validatePassword);
+
+// ── START EXAM ─────────────────────────────────────────────────────────────
+btnStart.addEventListener('click', () => { if (selectedKey) startExam(); });
+
+function startExam() {
+  userAnswers = new Array(40).fill(null);
+  isGraded    = false;
+  timeRemaining = TOTAL_TIME;
+
+  const label = `${selectedKey.month} ${selectedKey.year} · Paper ${selectedKey.paper}`;
+  examLbl.textContent  = label;
+  panelTag.textContent = label;
+
+  pdfFrame.src = pdfPath(selectedKey);
+
+  buildQuestions();
+  updateProgress();
+  startTimer();
+
+  setupScreen.classList.remove('active');
+  examScreen.classList.add('active');
+}
+
+// ── BUILD QUESTIONS ────────────────────────────────────────────────────────
+function buildQuestions() {
+  questionsDiv.innerHTML = '';
+  answerPanel.classList.remove('graded');
+  btnSubmit.disabled    = false;
+  btnSubmit.textContent = 'Submit Answers';
+
+  for (let i = 1; i <= 40; i++) {
+    const row  = document.createElement('div');
+    row.className = 'q-row';
+    row.dataset.q = i;
+
+    const num = document.createElement('div');
+    num.className   = 'q-num';
+    num.textContent = i;
+
+    const opts = document.createElement('div');
+    opts.className = 'q-options';
+
+    ['A','B','C','D'].forEach(letter => {
+      const lbl = document.createElement('label');
+      const inp = document.createElement('input');
+      inp.type  = 'radio';
+      inp.name  = `q${i}`;
+      inp.value = letter;
+      inp.addEventListener('change', () => {
+        userAnswers[i-1] = letter;
+        updateProgress();
+      });
+      lbl.appendChild(inp);
+      lbl.appendChild(document.createTextNode(letter));
+      opts.appendChild(lbl);
+    });
+
+    row.appendChild(num);
+    row.appendChild(opts);
+    questionsDiv.appendChild(row);
+  }
+}
+
+function updateProgress() {
+  const n = userAnswers.filter(a => a !== null).length;
+  progressFill.style.width  = `${(n/40)*100}%`;
+  progressText.textContent  = `${n} / 40 answered`;
+}
+
+// ── GRADE ──────────────────────────────────────────────────────────────────
+btnSubmit.addEventListener('click', () => { if (!isGraded) gradeAnswers(); });
+
+function gradeAnswers() {
+  isGraded = true;
+  answerPanel.classList.add('graded');
+  btnSubmit.disabled    = true;
+  btnSubmit.textContent = 'Submitted ✓';
+  btnDownloadSmall.classList.add('visible');
+
+  let correct=0, wrong=0, skipped=0;
+
+  questionsDiv.querySelectorAll('.q-row').forEach((row, idx) => {
+    const key = selectedKey.answers[idx];
+    const sel = userAnswers[idx];
+
+    row.classList.remove('correct','wrong','skipped');
+    const old = row.querySelector('.correct-badge');
+    if (old) old.remove();
+
+    // Remove any previous correct highlights
+    row.querySelectorAll('.show-correct').forEach(l => l.classList.remove('show-correct'));
+
+    if (sel === null) {
+      skipped++;
+      row.classList.add('skipped');
+      addBadge(row, key);
+      highlightCorrectAnswer(row, key);
+    } else if (sel === key) {
+      correct++;
+      row.classList.add('correct');
+    } else {
+      wrong++;
+      row.classList.add('wrong');
+      addBadge(row, key);
+      highlightCorrectAnswer(row, key);
+    }
+  });
+
+  showResults(correct, wrong, skipped);
+}
+
+function highlightCorrectAnswer(row, key) {
+  const labels = row.querySelectorAll('.q-options label');
+  labels.forEach(lbl => {
+    const input = lbl.querySelector('input');
+    if (input && input.value === key) {
+      lbl.classList.add('show-correct');
+    }
+  });
+}
+
+function addBadge(row, key) {
+  const b = document.createElement('span');
+  b.className   = 'correct-badge';
+  b.textContent = key;
+  row.appendChild(b);
+}
+
+// ── RESULTS ────────────────────────────────────────────────────────────────
+function showResults(correct, wrong, skipped) {
+  scoreNum.textContent    = correct;
+  statCorrect.textContent = correct;
+  statWrong.textContent   = wrong;
+  statSkipped.textContent = skipped;
+
+  setTimeout(() => { ringFill.style.strokeDashoffset = 283 - (correct/40) * 283; }, 100);
+
+  let color, grade, heading;
+  const pct = correct / 40;
+  if      (pct >= .90) { color='var(--correct)'; grade='A* · Excellent!';   heading='Outstanding!' }
+  else if (pct >= .80) { color='#86efac';         grade='A · Great work';    heading='Well done!' }
+  else if (pct >= .70) { color='var(--accent)';  grade='B · Good effort';   heading='Good job!' }
+  else if (pct >= .60) { color='#fbbf24';         grade='C · Keep it up';    heading='Keep going!' }
+  else if (pct >= .50) { color='#fb923c';         grade='D · More practice'; heading='Room to grow!' }
+  else                 { color='var(--wrong)';    grade='U · Need revision'; heading="Don't give up!" }
+
+  ringFill.style.stroke     = color;
+  gradeTag.textContent      = grade;
+  gradeTag.style.background = color + '22';
+  gradeTag.style.color      = color;
+  gradeTag.style.border     = `1px solid ${color}44`;
+  resultHead.textContent    = heading;
+
+  overlay.classList.add('visible');
+}
+
+// ── OVERLAY ACTIONS ────────────────────────────────────────────────────────
+btnReview.addEventListener('click', () => {
+  overlay.classList.remove('visible');
+  const first = questionsDiv.querySelector('.q-row.wrong, .q-row.skipped');
+  if (first) first.scrollIntoView({ behavior:'smooth', block:'center' });
+});
+
+[btnNewPaper, btnReset, btnBackTop].forEach(b => b.addEventListener('click', goToSetup));
+
+// ── TIMER ────────────────────────────────────────────────────────────────────
+function startTimer() {
+  clearTimer();
+  updateTimerDisplay();
+
+  timerInterval = setInterval(() => {
+    timeRemaining--;
+    updateTimerDisplay();
+
+    if (timeRemaining <= 0) {
+      clearTimer();
+      if (!isGraded) gradeAnswers();
+    }
+  }, 1000);
+}
+
+function clearTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
+function updateTimerDisplay() {
+  const minutes = Math.floor(timeRemaining / 60);
+  const seconds = timeRemaining % 60;
+  timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+  // Update styling based on time remaining
+  timerDisplay.classList.remove('warning', 'danger');
+  if (timeRemaining <= 60) {
+    timerDisplay.classList.add('danger');
+  } else if (timeRemaining <= 300) {
+    timerDisplay.classList.add('warning');
+  }
+}
+
+// ── DOWNLOAD CSV ─────────────────────────────────────────────────────────────
+btnDownload.addEventListener('click', downloadCSV);
+btnDownloadSmall.addEventListener('click', downloadCSV);
+
+function downloadCSV() {
+  if (!selectedKey) return;
+
+  let csv = 'QuestionNumber,OptionChosen,CorrectOption,Grade\n';
+
+  for (let i = 0; i < 40; i++) {
+    const questionNum = i + 1;
+    const chosen = userAnswers[i] || '';
+    const correct = selectedKey.answers[i];
+    const grade = (chosen === correct) ? 1 : 0;
+
+    csv += `${questionNum},${chosen},${correct},${grade}\n`;
+  }
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `results_${selectedKey.year}_${selectedKey.month}_${selectedKey.paper}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function goToSetup() {
+  overlay.classList.remove('visible');
+  examScreen.classList.remove('active');
+  setupScreen.classList.add('active');
+  pdfFrame.src = '';
+  isGraded = false;
+  btnDownloadSmall.classList.remove('visible');
+  clearTimer();
+  timerDisplay.classList.remove('warning', 'danger');
+  timerDisplay.textContent = '40:00';
+}
+</script>
+</body>
+</html>
